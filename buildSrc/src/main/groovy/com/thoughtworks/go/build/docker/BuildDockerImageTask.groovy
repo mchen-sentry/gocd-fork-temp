@@ -46,7 +46,7 @@ class BuildDockerImageTask extends DefaultTask {
   // Not really a classic output dir from Gradle perspective, as multiple tasks share dir from parent with unique tarballs per distribution.
   // We use a string for Gradle 7 compatibility, and because we don't want Gradle to consider the actual contents.
   @Input String outputDir
-  
+
   @Internal Closure templateHelper
   @Internal Closure verifyHelper
   @Internal ExecOperations execOperations
@@ -120,15 +120,6 @@ class BuildDockerImageTask extends DefaultTask {
         verifyHelper.call()
         logger.lifecycle("\nVerification of ${imageNameWithTag} image on ${distro.dockerVerifyArchitecture} successful.")
       }
-
-      logger.lifecycle("Cleaning up...")
-      // delete the image, to save space
-      if (!project.hasProperty('dockerBuildKeepImages')) {
-        execOperations.exec {
-          workingDir = project.rootProject.projectDir
-          commandLine = ["docker", "rmi", imageNameWithTag]
-        }
-      }
     }
 
     project.delete("${gitRepoDirectory}/${artifactZip.name}")
@@ -190,17 +181,12 @@ class BuildDockerImageTask extends DefaultTask {
 
   @Internal
   GString getImageNameWithTag() {
-    "${dockerImageName}:${imageTag}"
+    "${dockerImageName}:latest"
   }
 
   @Internal
   Set<GString> getSupportedPlatforms() {
     distro.supportedArchitectures.collect {"linux/${it.dockerAlias}" }
-  }
-
-  @Input
-  GString getImageTag() {
-    "v${project.fullVersion}"
   }
 
   @Internal
