@@ -53,6 +53,8 @@ public class GitCommand extends SCMCommand {
     private static final Pattern GIT_SUBMODULE_URL_PATTERN = Pattern.compile("^submodule\\.(.+)\\.url (.+)$");
     private static final Pattern GIT_DIFF_TREE_PATTERN = Pattern.compile("^(.)\\s+(.+)$");
 
+    private static final int MAX_RETRIES = 3;
+
     private final File workingDir;
     private final List<SecretString> secrets;
     private final String branch;
@@ -102,13 +104,14 @@ public class GitCommand extends SCMCommand {
                 withArg(workingDir.getAbsolutePath());
 
         if (!hasRefSpec()) {
-            return run(gitClone, outputStreamConsumer);
+            return runWithRetries(gitClone, outputStreamConsumer, MAX_RETRIES);
         }
 
         final String abbrevBranch = localBranch();
         final String fullLocalRef = abbrevBranch.startsWith("refs/") ? abbrevBranch : REFS_HEADS + abbrevBranch;
 
-        return runCascade(outputStreamConsumer,
+        return runCascadeWithRetries(outputStreamConsumer,
+                MAX_RETRIES,
                 gitClone,
                 git_C().withArgs("config", "--replace-all", "remote.origin.fetch", "+" + expandRefSpec()),
                 git_C().withArgs("fetch", "--prune", "--recurse-submodules=no"),
@@ -140,10 +143,11 @@ public class GitCommand extends SCMCommand {
                 withArg(new UrlArgument(url)).withArg(workingDir.getAbsolutePath());
 
         if (!hasRefSpec()) {
-            return run(gitClone, outputStreamConsumer);
+            return runWithRetries(gitClone, outputStreamConsumer, MAX_RETRIES);
         }
 
-        return runCascade(outputStreamConsumer,
+        return runCascadeWithRetries(outputStreamConsumer,
+                MAX_RETRIES,
                 gitClone,
                 git_C().withArgs("config", "--replace-all", "remote.origin.fetch", "+" + expandRefSpec()),
                 git_C().withArgs("fetch", "--prune", "--recurse-submodules=no"),
@@ -264,7 +268,7 @@ public class GitCommand extends SCMCommand {
         log(outputStreamConsumer, "Fetching changes");
         CommandLine gitFetch = gitWd().withArgs("fetch", "origin", "--prune", "--recurse-submodules=no");
 
-        int result = run(gitFetch, outputStreamConsumer);
+        int result = runWithRetries(gitFetch, outputStreamConsumer, MAX_RETRIES);
         if (result != 0) {
             throw new RuntimeException(format("git fetch failed for [%s]", this.workingRepositoryUrl()));
         }
@@ -280,7 +284,7 @@ public class GitCommand extends SCMCommand {
                 .withArgs("fetch", "origin")
                 .withArg(format("--depth=%d", depth));
 
-        int result = run(gitFetch, outputStreamConsumer);
+        int result = runWithRetries(gitFetch, outputStreamConsumer, MAX_RETRIES);
         if (result != 0) {
             throw new RuntimeException(format("Unshallow repository failed for [%s]", this.workingRepositoryUrl()));
         }

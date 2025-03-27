@@ -96,6 +96,15 @@ export const PipelineOperationsWidget = {
       return "There was an unknown error.";
     };
 
+    const isRevisionSelected = (triggerWithOptionsInfo) => {
+      for (const m of triggerWithOptionsInfo.materials) {
+        if (m.isRevisionSelected()) {
+          return true;
+        }
+      }
+      return false;
+    };
+
     self.destroyPausePopup = (modal) => {
       self.pauseMessage("");
       modal.destroy();
@@ -137,8 +146,13 @@ export const PipelineOperationsWidget = {
               class:   'save primary',
               onclick: () => {
                 const isValid = self.triggerWithOptionsInfo().validate();
+                const isSelected = isRevisionSelected(self.triggerWithOptionsInfo());
 
-                if (isValid) {
+                if (!isSelected) {
+                  console.error('Dev-Infra: We require users to select a revision/deployment when manually running a pipeline, otherwise the previous pipeline run is re-run instead of using the latest material.');
+                  self.errorMessage(`You must select a revision/deployment to trigger the ${pipeline.name} pipeline.`);
+                  m.redraw();
+                } else if (isValid) {
                   self.trigger(pipeline, self.triggerWithOptionsInfo().getTriggerOptionsJSON());
                   onModalClose();
                 } else {
@@ -164,10 +178,9 @@ export const PipelineOperationsWidget = {
     const operationMessages = vnode.attrs.operationMessages;
 
     let pausedMessage, pauseUnpauseClass, onPauseUnpauseClick;
-    let pausedTitlenLabel, playTitlenLabel, playWithOptionsTitlenLabel;
+    let pausedTitlenLabel, playWithOptionsTitlenLabel;
     if (pipeline.isPaused) {
       pausedTitlenLabel          = "Pipeline Paused";
-      playTitlenLabel            = "Trigger Pipeline Disabled";
       playWithOptionsTitlenLabel = "Trigger with Options Disabled";
       pauseUnpauseClass          = `pipeline_btn unpause ${(pipeline.canPause) ? '' : 'disabled'}`;
       pausedMessage              = `Paused by ${pipeline.pausedBy} (${pipeline.pausedCause || ''})`;
@@ -176,7 +189,6 @@ export const PipelineOperationsWidget = {
       pauseUnpauseClass          = `pipeline_btn pause ${(pipeline.canPause) ? '' : 'disabled'}`;
       onPauseUnpauseClick        = (pipeline.canPause) && vnode.state.showPausePopup.bind(vnode.state, pipeline);
       pausedTitlenLabel          = "Pause Pipeline";
-      playTitlenLabel            = "Trigger Pipeline";
       playWithOptionsTitlenLabel = "Trigger with Options";
     }
 
@@ -208,11 +220,6 @@ export const PipelineOperationsWidget = {
       <div>
         {flashMessage}
         <ul class="pipeline_operations">
-          <li>
-            <f.button onclick={!pipeline.triggerDisabled() && vnode.state.trigger.bind(vnode.state, pipeline)}
-                      class={`pipeline_btn play ${(pipeline.triggerDisabled() ? 'disabled' : '')}`}
-                      tooltipText={triggerButtonsTooltipText} aria-label={playTitlenLabel} title={playTitlenLabel}/>
-          </li>
           <li>
             <f.button
               onclick={!pipeline.triggerDisabled() && vnode.state.showTriggerWithOptionsPopup.bind(vnode.state, pipeline)}
