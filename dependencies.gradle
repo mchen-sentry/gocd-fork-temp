@@ -174,6 +174,7 @@ final Map<String, String> v = [
   ztExec              : versionOf(libraries.ztExec),
 
   // misc
+                      // https://download.tanukisoftware.com/wrapper/3.5.60/wrapper-delta-pack-3.5.60-st.tar.gz
   tanuki              : '3.5.60-st', // https://wrapper.tanukisoftware.com/doc/english/download.jsp#stable
   tanukiSha256sum     : '6ead64eca8bebe7450a951e4dbd66f2c93397945dd255c16137a583f3723ad13',
   tfsSdk              : '14.139.0', // https://github.com/microsoft/team-explorer-everywhere/releases
