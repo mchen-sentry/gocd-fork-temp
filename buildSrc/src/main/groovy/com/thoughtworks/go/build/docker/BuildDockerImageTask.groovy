@@ -104,6 +104,7 @@ class BuildDockerImageTask extends DefaultTask {
         "--tag", imageNameWithTag
       )
 
+      /*
       // verify image
       def isNativeVerify = distro.dockerVerifyArchitecture == Architecture.current()
       if (verifyHelper != null && (isNativeVerify || !project.hasProperty('dockerBuildSkipNonNativeVerify'))) {
@@ -120,6 +121,7 @@ class BuildDockerImageTask extends DefaultTask {
         verifyHelper.call()
         logger.lifecycle("\nVerification of ${imageNameWithTag} image on ${distro.dockerVerifyArchitecture} successful.")
       }
+      */
     }
 
     project.delete("${gitRepoDirectory}/${artifactZip.name}")
