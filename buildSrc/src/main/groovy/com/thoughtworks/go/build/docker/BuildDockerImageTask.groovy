@@ -104,6 +104,16 @@ class BuildDockerImageTask extends DefaultTask {
         "--tag", imageNameWithTag
       )
 
+      // we skip verification here for faster builds and prefer to verify manually as we have custom images
+      // ...however we need this piece so gocd-server:latest (imageNameWithTag) is available to our cloudbuild for further steps
+      executeInGitRepo("docker", "buildx", "build",
+        "--quiet",
+        "--load",
+        "--platform", "linux/${distro.dockerVerifyArchitecture.dockerAlias}",
+        ".",
+        "--tag", imageNameWithTag
+      )
+
       /*
       // verify image
       def isNativeVerify = distro.dockerVerifyArchitecture == Architecture.current()
