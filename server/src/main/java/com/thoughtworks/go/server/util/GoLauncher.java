@@ -20,6 +20,7 @@ import com.thoughtworks.go.server.GoServer;
 import com.thoughtworks.go.util.GoConstants;
 import com.thoughtworks.go.util.SystemEnvironment;
 import org.apache.commons.io.FileUtils;
+import io.sentry.Sentry;
 
 import java.io.File;
 
@@ -36,6 +37,16 @@ public final class GoLauncher {
         systemEnvironment.setProperty(GoConstants.USE_COMPRESSED_JAVASCRIPT, Boolean.toString(true));
         LogConfigurator logConfigurator = new LogConfigurator(DEFAULT_LOGBACK_CONFIGURATION_FILE);
         logConfigurator.initialize();
+
+        try {
+            Sentry.init(options -> {
+                options.setDsn("https://5f9c52704d63aad05637d6c47d46cf78@o1.ingest.us.sentry.io/4509725748232192");
+                options.setEnvironment("dev");
+                options.setTracesSampleRate(1.0);
+                options.setEnableExternalConfiguration(true);
+            });
+        } catch (Throwable ignored) {
+        }
 
         try {
             cleanupTempFiles();

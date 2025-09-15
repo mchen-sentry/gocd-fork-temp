@@ -309,6 +309,9 @@ dependencies {
   testRuntimeOnly project.deps.junit5PlatformLauncher
   testImplementation project.deps.mockitoJunit5
   integrationTestImplementation project.deps.springTestJunit5
+  implementation project.deps.sentry
+  implementation project.deps.sentryLogback
+  implementation project.deps.sentryServlet
 }
 
 jar {

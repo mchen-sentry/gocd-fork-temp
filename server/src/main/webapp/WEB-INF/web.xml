@@ -137,6 +137,11 @@
     <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
   </listener>
 
+  <!-- Sentry instrumentation -->
+  <listener>
+    <listener-class>io.sentry.servlet.jakarta.SentryServletContextListener</listener-class>
+  </listener>
+
   <listener>
     <listener-class>org.jruby.rack.rails.RailsServletContextListener</listener-class>
   </listener>
@@ -197,6 +202,15 @@
     <filter-name>SparkPreFilter</filter-name>
     <url-pattern>/spark/*</url-pattern>
     <dispatcher>FORWARD</dispatcher>
+  </filter-mapping>
+
+  <filter>
+    <filter-name>SentryFilter</filter-name>
+    <filter-class>io.sentry.servlet.jakarta.SentryServletFilter</filter-class>
+  </filter>
+  <filter-mapping>
+    <filter-name>SentryFilter</filter-name>
+    <url-pattern>/*</url-pattern>
   </filter-mapping>
 
   <servlet-mapping>
